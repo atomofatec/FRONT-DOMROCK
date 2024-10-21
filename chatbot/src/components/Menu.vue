@@ -1,18 +1,10 @@
 <template>
   <div class="menu">
-    <!-- Modo Escuro/Claro -->
+    <!-- Modo Noturno/Claro -->
     <button @click="toggleDarkMode" class="menu-button">
       <div class="icon-text">
-        <span>{{ darkMode ? 'Modo Claro' : 'Modo Escuro' }}</span>
+        <span>{{ darkMode ? 'Modo Claro' : 'Modo Noturno' }}</span>
         <i :class="darkMode ? 'fa-regular fa-sun' : 'fa-regular fa-moon'"></i>
-      </div>
-    </button>
-
-    <!-- Ajuda -->
-    <button @click="goToHelp" class="menu-button">
-      <div class="icon-text">
-        <span>Ajuda</span>
-        <i class="fa-regular fa-circle-question"></i>
       </div>
     </button>
   </div>
@@ -82,4 +74,13 @@ i {
   font-weight: 400;
 }
 
+@media (max-width: 600px) {
+  .menu-button {
+    padding: 8px;
+  }
+
+  i {
+    font-size: 16px;
+  }
+}
 </style>
