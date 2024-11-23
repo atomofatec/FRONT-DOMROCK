@@ -57,19 +57,42 @@ function sendMessage(message) {
 
   newMessage.value = '';
 
-  // Simula uma resposta do bot
-  setTimeout(() => {
-    messages.value.push({
-      id: String(messages.value.length + 1),
-      data: 'Esta é uma resposta de teste!',
-      member: {
-        id: '1',
-        clientData: {
-          color: '#096AD9',
+  // Faz a requisição ao back-end
+  fetch('http://localhost:5000/ask-chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ pergunta: message }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Adiciona a resposta do back-end à lista de mensagens
+      messages.value.push({
+        id: String(messages.value.length + 1),
+        data: data.resposta, // Resposta retornada do back-end
+        member: {
+          id: '1',
+          clientData: {
+            color: '#096AD9',
+          },
         },
-      },
+      });
+    })
+    .catch((error) => {
+      console.error('Erro ao obter a resposta do bot:', error);
+      // Adiciona uma mensagem de erro à lista de mensagens
+      messages.value.push({
+        id: String(messages.value.length + 1),
+        data: 'Erro ao conectar ao servidor. Tente novamente mais tarde.',
+        member: {
+          id: '1',
+          clientData: {
+            color: '#FF0000',
+          },
+        },
+      });
     });
-  }, 1000);
 }
 
 // Função para alternar modo noturno/claro
@@ -127,11 +150,6 @@ watch(darkMode, (newValue) => {
   background-repeat: no-repeat;
   background-position: center;
   background-size: 13%;
-}
-
-.messagesList {
-  flex-grow: 1;
-  overflow-y: auto;
 }
 
 @media (max-width: 600px) {
