@@ -2,7 +2,7 @@
   <form class="inputForm" @submit.prevent="sendMessage">
     <input v-model="localMessage" placeholder="Digite sua mensagem..." />
     <button type="submit">
-      <i class="fas fa-paper-plane"></i>
+      <font-awesome-icon icon="fas fa-paper-plane" />
     </button>
   </form>
 </template>
@@ -61,9 +61,6 @@ button {
   border: none;
   cursor: pointer;
   padding: 10px;
-}
-
-button i {
   font-size: 24px;
   color: #096AD9;
 }
