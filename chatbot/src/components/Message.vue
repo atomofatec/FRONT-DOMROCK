@@ -26,6 +26,7 @@ const className = messageFromMe ? "messagesMessage currentMember" : "messagesMes
 .messagesMessage {
   display: flex;
   margin-top: 10px;
+  font-family: Arial, sans-serif;
 }
 
 .currentMember {
@@ -37,6 +38,8 @@ const className = messageFromMe ? "messagesMessage currentMember" : "messagesMes
   height: 35px;
   width: 35px;
   border-radius: 50%;
+  margin-left: 3px;
+  margin-right: 3px;
 }
 
 .messageContent {
