@@ -3,17 +3,27 @@
     <div class="vertical-line left-line"></div>
     <div class="vertical-line right-line"></div>
 
-    <Menu :darkMode="darkMode" @toggle-dark-mode="toggleDarkMode" />
+    <Menu :darkMode="darkMode" @toggle-dark-mode="toggleDarkMode" @clear-messages="clearMessages" />
 
-    <div class="appContent">
-      <Messages :messages="messages" :me="me" />
-      <ChatInput :newMessage="newMessage" @send-message="sendMessage" @update:newMessage="newMessage = $event" />
+    <div class="appContent" :class="{ 'no-background': $route.path === '/ajuda' }">
+      <Ajuda v-if="$route.path === '/ajuda'" />
+      
+      <div v-if="$route.path === '/'">
+        <div class="messagesList">
+          <Messages :messages="messages" :me="me" />
+        </div>
+        <div class="chatInputWrapper">
+          <ChatInput :newMessage="newMessage" @send-message="sendMessage" @update:newMessage="newMessage = $event" />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
+import Ajuda from './components/Ajuda.vue';
 import Messages from './components/Messages.vue';
 import Menu from './components/Menu.vue';
 import ChatInput from './components/ChatInput.vue';
@@ -57,19 +67,42 @@ function sendMessage(message) {
 
   newMessage.value = '';
 
-  // Simula uma resposta do bot
-  setTimeout(() => {
-    messages.value.push({
-      id: String(messages.value.length + 1),
-      data: 'Esta é uma resposta de teste!',
-      member: {
-        id: '1',
-        clientData: {
-          color: '#096AD9',
+  // Faz a requisição ao back-end
+  fetch('http://localhost:5000/ask-chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ pergunta: message }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Adiciona a resposta do back-end à lista de mensagens
+      messages.value.push({
+        id: String(messages.value.length + 1),
+        data: data.resposta, // Resposta retornada do back-end
+        member: {
+          id: '1',
+          clientData: {
+            color: '#096AD9',
+          },
         },
-      },
+      });
+    })
+    .catch((error) => {
+      console.error('Erro ao obter a resposta do bot:', error);
+      // Adiciona uma mensagem de erro à lista de mensagens
+      messages.value.push({
+        id: String(messages.value.length + 1),
+        data: 'Erro ao conectar ao servidor. Tente novamente mais tarde.',
+        member: {
+          id: '1',
+          clientData: {
+            color: '#FF0000',
+          },
+        },
+      });
     });
-  }, 1000);
 }
 
 // Função para alternar modo noturno/claro
@@ -77,6 +110,12 @@ function toggleDarkMode() {
   darkMode.value = !darkMode.value;
 }
 
+// Função para limpar mensagens
+function clearMessages() {
+  messages.value = []; // Redefine a lista de mensagens como vazia
+}
+
+// Observa mudanças no modo escuro
 watch(darkMode, (newValue) => {
   if (newValue) {
     document.body.classList.add('dark-mode');
@@ -102,6 +141,7 @@ watch(darkMode, (newValue) => {
   background-color: #096AD9;
   height: 100%;
   left: 0;
+  margin-left: 15px;
 }
 
 .left-line {
@@ -117,21 +157,31 @@ watch(darkMode, (newValue) => {
 .appContent {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
-  height: calc(100vh - 50px);
+  height: 100%; 
   padding: 0 10px;
   background-image: url('../logoChatbot.png');
   background-repeat: no-repeat;
   background-position: center;
   background-size: 13%;
+  /*overflow-y: hidden;*/
+}
+
+.appContent.no-background {
+  background-image: none; /* Remove a imagem de fundo */
 }
 
 .messagesList {
   flex-grow: 1;
   overflow-y: auto;
+  padding: 10px;
+}
+
+.chatInputWrapper {
+  margin-top: auto; 
 }
 
 @media (max-width: 600px) {
@@ -147,12 +197,24 @@ watch(darkMode, (newValue) => {
     height: auto;
   }
 }
-
 </style>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 :root {
   --background-color: rgba(99, 99, 191, 0.07);
+}
+
+body {
+  background-color: var(--background-color);
+  font-family: Arial, sans-serif;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .dark-mode {
@@ -165,7 +227,7 @@ watch(darkMode, (newValue) => {
   color: white;
 }
 
-.dark-mode .inputForm{
+.dark-mode .inputForm {
   background-color: #454646;
 }
 
